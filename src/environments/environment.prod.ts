@@ -1,3 +1,5 @@
 export const environment = {
-  production: true
+  production: true,
+  mapsKey: 'Substituir pela chave'
+
 };

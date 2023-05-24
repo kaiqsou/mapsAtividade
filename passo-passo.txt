@@ -1,0 +1,96 @@
+1. Criar o projeto com: ionic start (nome) blank --type=angular
+
+
+2. Instalar o PWA: npm install @ionic/pwa-elements
+
+
+3. Armazenar a chave em uma variável no /src/environment
+mapsKey: 'Chave'
+
+
+4. Instalar os seguintes capacitors no projeto
+npm install @capacitor/google-maps
+npx cap sync 
+npm install @capacitor/geolocation
+npx cap sync 
+	se não funcionar substituir 'npx' por 'ionic'
+
+5. No module.ts da Home, importar o CUSTOM_ELEMENTS_SCHEMA
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+	schemas: [CUSTOM_ELEMENTS_SCHEMA] acima do imports
+
+
+6. No CSS da home, estilizar o component do capacitor
+capacitor-google-map {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+};
+
+
+7. No HTML da home, subsituir todo do content por :
+ <capacitor-google-map #map></capacitor-google-map>
+
+
+8. No Home.page.ts, 
+
+  Acrescentar o @ViewChild e mapRef! //(importando tudo que se pede)
+  @ViewChild('map')
+  mapRef!: ElementRef<HTMLElement>; map!: GoogleMap;
+
+  8.1. Criar o método Async CreateMap
+      this.map = await GoogleMap.create({
+      id: 'my-map',
+      element: this.mapRef.nativeElement,
+      apiKey: environment.mapsKey,
+      config: {
+        center: {
+          lat: -23.592539,
+          lng: -46.662541,
+        },
+        zoom: 19,
+      },
+    });
+         OBS: Importar o environment
+
+ 8.2. Criar o método Async buscarPosicao
+
+  async buscarPosicao() {
+    const coordinates = await Geolocation.getCurrentPosition();
+    console.log('Current position:', coordinates);
+    return coordinates;
+  }
+
+    8.2.1. Adicionar o metodo buscar posição no createMap
+	this.adicionarMarcador(coordinates) acima do return;
+
+ 8.3. Criar o método Async adicionarMarcador
+
+   async adicionarMarcador(coordinates: Position) {
+    const markerId = await this.map.addMarker({
+      coordinate: {
+        lat: coordinates.coords.latitude,
+        lng: coordinates.coords.longitude
+      },
+    });
+    
+  }
+
+ 	8.3.1. Adicionar o método AdicionarMarcador no buscarPosição
+
+  8.4. Criar o método Async zoomMarcador
+
+    zoomMarcador(coordinates: Position){
+    this.map.setCamera({
+      coordinate:{
+        lat: coordinates.coords.latitude,
+        lng: coordinates.coords.longitude,
+      },
+      zoom: 15,
+      animate: true
+    });
+  }
+	8.4.1 Adicionar o método zoomMarcador(coordinates) no adicionarMarcador()
+
+
+9. Adicionar o método ionViewWillEnter() abaixo do construtor, com o método createMaps() dentro dele
